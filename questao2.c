@@ -29,16 +29,18 @@ int main() {
         return 1;
     
     // Fazendo a leitura por linhas:
-    
+    // Mudando o filtro: depois de alguns testes o resultado não é compatível com a resposta do site, ao que parece...
+    // O problema é que nem sempre o NOC se encontra na sé
     while (fgets(linha, sizeof(linha), output)) {
-      int coluna = 0;
+      //for (i = 0; i == '\0'; i++) {  // 
+
       char *token = strtok(linha, ",");
 
         // Fazendo uma busca pela posição do NOC ->(interpretado como o país representante do atleta);
         //Testando somente a busca pelo país por enquanto;
 
         while (token != NULL) {
-            if (coluna == 5) {
+            if (coluna == 6) {
                 if (strstr(token, país) != NULL) {
                     printf ("País encontrado: %s\n", token);
                     contador++;
