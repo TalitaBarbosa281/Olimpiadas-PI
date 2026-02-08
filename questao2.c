@@ -1,5 +1,5 @@
 //Para um determinado país, determine a quantidade de atletas do sexo masculino e feminino que já participaram das Olimpíadas
-// (a energia caiu, bateria pouca...)
+// corrigindo o nome do arquivo de busca
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -23,8 +23,8 @@ int main() {
     
     printf("Digite o NOC do país: ");
     scanf("%s", país);
-    FILE*output = fopen("output/bios.csv", "r");
-    if (output == NULL) {
+    FILE*data = fopen("data/bios.csv", "r"); // output trocado por data
+    if (data == NULL) {
         printf("Erro ao abrir o arquivo!\n");
         return 1;
     
@@ -49,7 +49,7 @@ int main() {
         }  
      }
     printf("Número de vezes que o %s aparece: %d\n", país, contador);
-    fclose(output);
+    fclose(data);
     
     return 0;
 }
