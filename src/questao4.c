@@ -2,12 +2,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "structs.h"
 
-typedef struct {
-    char noc[10];   
-    int pontuacao;  
-} PaisPontos;
+// Como o C não possue funções como toUpper ou toLower, é preciso criar uma função para ele não criar diferenças por causa de teclas maiúsculas ou minúsculas
+void deixarMaiusculo(char *str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        str[i] = toupper(str[i]);
+    }
+}
+
+// É basicamente um booleano que vai percorrer o arquivo e observar se o NOC é válido ou não (por exemplo, se eu digitar YTS, claramente não é um noc presente em noc.csv, mas o código só vai saber percorrendo tudo e descobrindo)
+int validarNOC(char *noc, Resultado *dados, int totalDeDados) {
+    for (int i = 0; i < totalDeDados; i++) {
+        if (strcmp(dados[i].noc, noc) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 // Função de comparação para o qsort (ordena por pontos, do maior para o menor)
 int compararPontos(const void *a, const void *b) {
@@ -24,19 +37,49 @@ int compararPontos(const void *a, const void *b) {
 void ordernarPontuacao(Resultado *dados, int totalDeDados){
     printf("Ranking por Pontuacao Ouro, Prata e Bronze\n");
 
-    //Aqui estou definindo os países que podem ser usados. Mais a frente será necessário organizar, pois pode haver problemas de escolhas
-    PaisStats placar[10] = {
-        {"USA", 0, 0, 0, 0, 0}, 
-        {"CHN", 0, 0, 0, 0, 0}, 
-        {"BRA", 0, 0, 0, 0, 0}, 
-        {"GBR", 0, 0, 0, 0, 0}, 
-        {"FRA", 0, 0, 0, 0, 0},
-        {"GER", 0, 0, 0, 0, 0}, 
-        {"ITA", 0, 0, 0, 0, 0}, 
-        {"JPN", 0, 0, 0, 0, 0}, 
-        {"AUS", 0, 0, 0, 0, 0}, 
-        {"CAN", 0, 0, 0, 0, 0}
-    };
+    //Aqui estou definindo a quantidade de países que podem ser usados, junto a um contador para realizar a atividade de loop while, onde ocorre a seleção de países. Como pode ver, acontecem algumas verificações no meio do caminho para evitar erros de código
+    PaisStats placar[10];
+    int count = 0;
+        while (count < 10) {
+        char entrada[100];
+        
+        printf("Digite o codigo do %d.o pais: ", count + 1);
+        scanf("%s", entrada);
+
+        deixarMaiusculo(entrada);
+        //Precisamos de uma verificação para, caso o usuário digite mais de 3 letras, o continue agirá para voltar o código loop para o início, mandando repetir
+        if (strlen(entrada) > 3) {
+            printf("Siglas olimpicas devem ter 3 letras\n");
+            continue;
+        }
+        //aqui chamamos a função validarNOC. Caso o noc seja válido, ele continua para testar se esse noc já foi ou não digitado anteriormente. Caso não tenha sido digitado, o "objeto" país é criado, até completar 10
+        if (validarNOC(entrada, dados, totalDeDados)) {
+            int repetido = 0;
+            for(int j=0; j < count; j++) {
+                if (strcmp(placar[j].noc, entrada) == 0) {
+                    repetido = 1; 
+                    break;
+                }
+            }
+
+            if (repetido) {
+                printf("Esse pais ja foi adicionado na lista. Escolha outro\n");
+            } else {
+                strcpy(placar[count].noc, entrada);
+                placar[count].qtd_ouros = 0;
+                placar[count].qtd_pratas = 0;
+                placar[count].qtd_bronzes = 0;
+                placar[count].pontuacao_total = 0;
+                placar[count].total_medalhas = 0;
+                
+                printf("    -> %s adicionado com sucesso.\n", entrada);
+                count++;
+            }
+        } else {
+            printf("[!] O codigo '%s' nao foi encontrado nos registros. Tente outro.\n", entrada);
+        }
+    }
+
     // Loop de Varredura, percorrendo todas as linhas que foram carregadas do arquivo
     for (int i = 0; i < totalDeDados; i++) {
         
