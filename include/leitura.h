@@ -5,5 +5,7 @@
 
 // Protótipo da função que carrega o results.csv
 Resultado* carregar_resultados(const char* filename, int* qtd);
+// Protótipo da função que carrega o bios.csv
+Atleta* carregar_atletas(const char* filename, int* qtd);
 
 #endif

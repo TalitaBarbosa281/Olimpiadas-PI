@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "structs.h"
-#include "leitura.h"
+#include "../include/structs.h"
+#include "../include/leitura.h"
 
 /* Isso aqui é uma função auxiliar que usaremos para realizar a "leitura" dos arquivos .CSV, de forma a não precisar repetir a leitura desnecessariamente
 O objetivo de csv_next_field é ler cada campo até a próxima vírgula, respeitando as aspas. Antes de implementar essa tática, tinhamos o problema da leitura simplesmente cortar de forma errada por causa de vírgulas inseridas entre aspas, como no caso de "Swimming, Men's 100m", em que o leitor começava a entender "Swimming" como um campo só e isso prejudicava toca a leitura sequencial da linha
