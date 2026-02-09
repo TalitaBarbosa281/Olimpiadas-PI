@@ -1,0 +1,255 @@
+/*
+==========================================================
+ PROJETO OLIMPÍADAS - ANÁLISE DE EFICIÊNCIA DE PAÍSES
+----------------------------------------------------------
+ Este programa:
+
+ 1) Lê o arquivo results.csv
+ 2) Seleciona 10 países definidos no código
+ 3) Conta:
+      - Número de medalhas
+      - Número de atletas únicos
+ 4) Calcula a razão:
+      eficiencia = medalhas / atletas
+ 5) Ordena países por eficiência
+ 6) Exibe no terminal
+ 7) Gera arquivo CSV para gráfico
+ 8) (Opcional) chama gnuplot para gerar gráfico automaticamente
+
+ O código foi escrito seguindo princípios de programação
+ imperativa, priorizando legibilidade e comentários ricos.
+
+ OBS: Ajustar índices das colunas conforme o CSV real.
+==========================================================
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_LINE 2048
+#define MAX_COUNTRIES 10
+#define MAX_IDS 60000
+
+//----------------------------------------------------------
+// Estrutura que armazena todas as informações de um país
+//----------------------------------------------------------
+typedef struct {
+    char noc[4];               // Código olímpico do país
+    int medalhas;              // Total de medalhas
+    int atletasCount;          // Quantidade de atletas únicos
+    int atletasIDs[MAX_IDS];   // Lista de IDs já contados
+} Pais;
+
+
+//----------------------------------------------------------
+// Função: verifica se atleta já foi contado
+//----------------------------------------------------------
+int atletaExiste(Pais *p, int id) {
+    for(int i=0;i<p->atletasCount;i++) {
+        if(p->atletasIDs[i] == id)
+            return 1;
+    }
+    return 0;
+}
+
+//----------------------------------------------------------
+// Função: adiciona atleta se ainda não existir
+//----------------------------------------------------------
+void adicionaAtleta(Pais *p, int id) {
+
+    // Evita duplicidade de contagem
+    if(!atletaExiste(p, id)) {
+        p->atletasIDs[p->atletasCount++] = id;
+    }
+}
+
+//----------------------------------------------------------
+// Função de comparação usada pelo qsort()
+// Ordena por eficiência (decrescente)
+//----------------------------------------------------------
+int compara(const void *a, const void *b) {
+
+    Pais *p1 = (Pais*)a;
+    Pais *p2 = (Pais*)b;
+
+    double e1 = (p1->atletasCount==0) ? 0 :
+                (double)p1->medalhas/p1->atletasCount;
+    double e2 = (p2->atletasCount==0) ? 0 :
+                (double)p2->medalhas/p2->atletasCount;
+
+    if(e1 < e2) return 1;
+    if(e1 > e2) return -1;
+    return 0;
+}
+
+
+//----------------------------------------------------------
+// Função que salva dados em CSV para gerar gráfico
+//----------------------------------------------------------
+void gerarCSV(Pais paises[]) {
+
+    FILE *f = fopen("eficiencia.csv","w");
+
+    fprintf(f,"Pais,Medalhas,Atletas,Eficiencia\n");
+
+    for(int i=0;i<MAX_COUNTRIES;i++) {
+
+        double eficiencia =
+            (paises[i].atletasCount==0) ? 0 :
+            (double)paises[i].medalhas/paises[i].atletasCount;
+
+        fprintf(f,"%s,%d,%d,%.5f\n",
+                paises[i].noc,
+                paises[i].medalhas,
+                paises[i].atletasCount,
+                eficiencia);
+    }
+
+    fclose(f);
+
+    printf("\nArquivo eficiencia.csv gerado!\n");
+}
+
+
+//----------------------------------------------------------
+// Função opcional que chama gnuplot para gerar gráfico
+//----------------------------------------------------------
+void gerarGrafico() {
+
+    FILE *gp = fopen("plot.gnu","w");
+
+    fprintf(gp,
+        "set datafile separator ','\n"
+        "set terminal png size 800,600\n"
+        "set output 'grafico.png'\n"
+        "set title 'Eficiência Olímpica por País'\n"
+        "set style data histograms\n"
+        "set style fill solid\n"
+        "set xtics rotate by -45\n"
+        "plot 'eficiencia.csv' using 4:xtic(1) title 'Eficiência'\n"
+    );
+
+    fclose(gp);
+
+    // Executa gnuplot se instalado
+    system("gnuplot plot.gnu");
+
+    printf("Grafico gerado: grafico.png\n");
+}
+
+
+//==========================================================
+// MAIN
+//==========================================================
+int main() {
+
+    //------------------------------------------------------
+    // Países escolhidos
+    //------------------------------------------------------
+    Pais paises[MAX_COUNTRIES] = {
+        {"BRA",0,0}, {"USA",0,0}, {"CHN",0,0}, {"RUS",0,0}, {"GER",0,0},
+        {"JPN",0,0}, {"GBR",0,0}, {"FRA",0,0}, {"ITA",0,0}, {"CAN",0,0}
+    };
+
+    int anoEscolhido = 2016;
+
+    FILE *file = fopen("results.csv","r");
+
+    if(!file){
+        printf("Erro ao abrir results.csv\n");
+        return 1;
+    }
+
+    char line[MAX_LINE];
+
+    //------------------------------------------------------
+    // Ignora cabeçalho
+    //------------------------------------------------------
+    fgets(line, MAX_LINE, file);
+
+    //------------------------------------------------------
+    // Leitura linha a linha do CSV
+    //------------------------------------------------------
+    while(fgets(line, MAX_LINE, file)) {
+
+        char *token;
+        int col=0;
+        int athleteID=0;
+        int year=0;
+        char noc[4]="";
+        char medal[12]="";
+
+        token = strtok(line, ",");
+
+        //--------------------------------------------------
+        // Tokenização da linha
+        //--------------------------------------------------
+        while(token != NULL){
+
+            // Ajustar índices se necessário
+            if(col==0) athleteID = atoi(token);
+            if(col==1) year = atoi(token);
+            if(col==2) strncpy(noc, token, 3);
+            if(col==3) strncpy(medal, token, 10);
+
+            token = strtok(NULL,",");
+            col++;
+        }
+
+        //--------------------------------------------------
+        // Filtra apenas ano desejado
+        //--------------------------------------------------
+        if(year != anoEscolhido)
+            continue;
+
+        //--------------------------------------------------
+        // Verifica país
+        //--------------------------------------------------
+        for(int i=0;i<MAX_COUNTRIES;i++){
+
+            if(strncmp(noc, paises[i].noc,3)==0){
+
+                adicionaAtleta(&paises[i], athleteID);
+
+                // Conta medalha válida
+                if(strcmp(medal,"NA")!=0 &&
+                   strlen(medal)>0)
+                    paises[i].medalhas++;
+            }
+        }
+    }
+
+    fclose(file);
+
+    //------------------------------------------------------
+    // Ordena países por eficiência
+    //------------------------------------------------------
+    qsort(paises, MAX_COUNTRIES, sizeof(Pais), compara);
+
+    //------------------------------------------------------
+    // Mostra resultados
+    //------------------------------------------------------
+    printf("\n=== EFICIENCIA OLIMPICA ===\n");
+
+    for(int i=0;i<MAX_COUNTRIES;i++){
+        double eficiencia =
+            (paises[i].atletasCount==0) ? 0 :
+            (double)paises[i].medalhas/paises[i].atletasCount;
+
+        printf("%s -> Medalhas:%d  Atletas:%d  Razao:%.5f\n",
+               paises[i].noc,
+               paises[i].medalhas,
+               paises[i].atletasCount,
+               eficiencia);
+    }
+
+    //------------------------------------------------------
+    // Geração de dados e gráfico
+    //------------------------------------------------------
+    gerarCSV(paises);
+    gerarGrafico();
+
+    return 0;
+}
+
