@@ -3,253 +3,184 @@
 ==========================================================
  PROJETO OLIMPÍADAS - ANÁLISE DE EFICIÊNCIA DE PAÍSES
 ----------------------------------------------------------
- Este programa:
-
- 1) Lê o arquivo results.csv
- 2) Seleciona 10 países definidos no código
- 3) Conta:
-      - Número de medalhas
-      - Número de atletas únicos
- 4) Calcula a razão:
-      eficiencia = medalhas / atletas
- 5) Ordena países por eficiência
- 6) Exibe no terminal
- 7) Gera arquivo CSV para gráfico
- 8) (Opcional) chama gnuplot para gerar gráfico automaticamente
-
- O código foi escrito seguindo princípios de programação
- imperativa, priorizando legibilidade e comentários ricos.
-
- OBS: Ajustar índices das colunas conforme o CSV real.
-==========================================================
-*/
+// Ranking por eficiencia
+// A eficiencia é calculada como:
+// total de medalhas / total de atletas unicos
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define MAX_LINE 2048
-#define MAX_COUNTRIES 10
-#define MAX_IDS 60000
-
-//----------------------------------------------------------
-// Estrutura que armazena todas as informações de um país
-//----------------------------------------------------------
-typedef struct {
-    char noc[4];               // Código olímpico do país
-    int medalhas;              // Total de medalhas
-    int atletasCount;          // Quantidade de atletas únicos
-    int atletasIDs[MAX_IDS];   // Lista de IDs já contados
-} Pais;
+#include <ctype.h>
+#include "structs.h"
 
 
-//----------------------------------------------------------
-// Função: verifica se atleta já foi contado
-//----------------------------------------------------------
-int atletaExiste(Pais *p, int id) {
-    for(int i=0;i<p->atletasCount;i++) {
-        if(p->atletasIDs[i] == id)
+// Essa função percorre a string recebida e transforma cada caractere em maiúsculo. Isso evita erro quando o usuário digita siglas em minúsculo.
+void deixarMaiusculo(char *str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        str[i] = toupper(str[i]);
+    }
+}
+
+
+// Essa função verifica se o código NOC digitado existe dentro dos dados carregados. Ela percorre todos os registros comparando as siglas.
+int validarNOC(char *noc, Resultado *dados, int totalDeDados) {
+    for (int i = 0; i < totalDeDados; i++) {
+        if (strcmp(dados[i].noc, noc) == 0) {
+            return 1;  // encontrado
+        }
+    }
+    return 0; // não encontrado
+}
+
+
+// Função usada pelo qsort para ordenar os países.
+// A comparação é feita pela eficiência calculada.
+// A ordenação é decrescente (mais eficiente primeiro).
+int compararEficiencia(const void *a, const void *b) {
+
+    PaisStats *p1 = (PaisStats*)a;
+    PaisStats *p2 = (PaisStats*)b;
+
+    double e1 = (p1->total_atletas == 0) ? 0 :
+                (double)p1->total_medalhas / p1->total_atletas;
+
+    double e2 = (p2->total_atletas == 0) ? 0 :
+                (double)p2->total_medalhas / p2->total_atletas;
+
+    if (e1 < e2) return 1;
+    if (e1 > e2) return -1;
+    return 0;
+}
+
+
+// Essa função verifica se um atleta já foi contado.
+// Isso evita duplicar atletas quando aparecem em várias linhas do arquivo.
+int atletaJaExiste(int *lista, int tamanho, int id) {
+    for(int i=0;i<tamanho;i++){
+        if(lista[i] == id)
             return 1;
     }
     return 0;
 }
 
-//----------------------------------------------------------
-// Função: adiciona atleta se ainda não existir
-//----------------------------------------------------------
-void adicionaAtleta(Pais *p, int id) {
-
-    // Evita duplicidade de contagem
-    if(!atletaExiste(p, id)) {
-        p->atletasIDs[p->atletasCount++] = id;
-    }
-}
-
-//----------------------------------------------------------
-// Função de comparação usada pelo qsort()
-// Ordena por eficiência (decrescente)
-//----------------------------------------------------------
-int compara(const void *a, const void *b) {
-
-    Pais *p1 = (Pais*)a;
-    Pais *p2 = (Pais*)b;
-
-    double e1 = (p1->atletasCount==0) ? 0 :
-                (double)p1->medalhas/p1->atletasCount;
-    double e2 = (p2->atletasCount==0) ? 0 :
-                (double)p2->medalhas/p2->atletasCount;
-
-    if(e1 < e2) return 1;
-    if(e1 > e2) return -1;
-    return 0;
-}
 
 
-//----------------------------------------------------------
-// Função que salva dados em CSV para gerar gráfico
-//----------------------------------------------------------
-void gerarCSV(Pais paises[]) {
+// Função principal responsável por montar o ranking
+void ordenarEficiencia(Resultado *dados, int totalDeDados){
 
-    FILE *f = fopen("eficiencia.csv","w");
+    printf("\nRanking por eficiencia (medalhas/atletas)\n");
 
-    fprintf(f,"Pais,Medalhas,Atletas,Eficiencia\n");
+    // Vetor que guarda as estatísticas dos países escolhidos
+    PaisStats placar[10];
 
-    for(int i=0;i<MAX_COUNTRIES;i++) {
+    // Matrizes auxiliares para guardar IDs únicos de atletas
+    int atletasTemp[10][60000];
+    int atletasCount[10] = {0};
 
-        double eficiencia =
-            (paises[i].atletasCount==0) ? 0 :
-            (double)paises[i].medalhas/paises[i].atletasCount;
+    int count = 0;
 
-        fprintf(f,"%s,%d,%d,%.5f\n",
-                paises[i].noc,
-                paises[i].medalhas,
-                paises[i].atletasCount,
-                eficiencia);
-    }
+    // Loop que permite o usuário escolher os 10 países
+    while(count < 10){
 
-    fclose(f);
+        char entrada[100];
 
-    printf("\nArquivo eficiencia.csv gerado!\n");
-}
+        printf("Digite o codigo do %d.o pais: ", count+1);
+        scanf("%s", entrada);
 
+        // Padroniza entrada para evitar erro de comparação
+        deixarMaiusculo(entrada);
 
-//----------------------------------------------------------
-// Função opcional que chama gnuplot para gerar gráfico
-//----------------------------------------------------------
-void gerarGrafico() {
-
-    FILE *gp = fopen("plot.gnu","w");
-
-    fprintf(gp,
-        "set datafile separator ','\n"
-        "set terminal png size 800,600\n"
-        "set output 'grafico.png'\n"
-        "set title 'Eficiência Olímpica por País'\n"
-        "set style data histograms\n"
-        "set style fill solid\n"
-        "set xtics rotate by -45\n"
-        "plot 'eficiencia.csv' using 4:xtic(1) title 'Eficiência'\n"
-    );
-
-    fclose(gp);
-
-    // Executa gnuplot se instalado
-    system("gnuplot plot.gnu");
-
-    printf("Grafico gerado: grafico.png\n");
-}
-
-
-//==========================================================
-// MAIN
-//==========================================================
-int main() {
-
-    //------------------------------------------------------
-    // Países escolhidos
-    //------------------------------------------------------
-    Pais paises[MAX_COUNTRIES] = {
-        {"BRA",0,0}, {"USA",0,0}, {"CHN",0,0}, {"RUS",0,0}, {"GER",0,0},
-        {"JPN",0,0}, {"GBR",0,0}, {"FRA",0,0}, {"ITA",0,0}, {"CAN",0,0}
-    };
-
-    int anoEscolhido = 2016;
-
-    FILE *file = fopen("results.csv","r");
-
-    if(!file){
-        printf("Erro ao abrir results.csv\n");
-        return 1;
-    }
-
-    char line[MAX_LINE];
-
-    //------------------------------------------------------
-    // Ignora cabeçalho
-    //------------------------------------------------------
-    fgets(line, MAX_LINE, file);
-
-    //------------------------------------------------------
-    // Leitura linha a linha do CSV
-    //------------------------------------------------------
-    while(fgets(line, MAX_LINE, file)) {
-
-        char *token;
-        int col=0;
-        int athleteID=0;
-        int year=0;
-        char noc[4]="";
-        char medal[12]="";
-
-        token = strtok(line, ",");
-
-        //--------------------------------------------------
-        // Tokenização da linha
-        //--------------------------------------------------
-        while(token != NULL){
-
-            // Ajustar índices se necessário
-            if(col==0) athleteID = atoi(token);
-            if(col==1) year = atoi(token);
-            if(col==2) strncpy(noc, token, 3);
-            if(col==3) strncpy(medal, token, 10);
-
-            token = strtok(NULL,",");
-            col++;
+        // Verifica tamanho da sigla
+        if(strlen(entrada) > 3){
+            printf("Sigla deve ter 3 letras\n");
+            continue;
         }
 
-        //--------------------------------------------------
-        // Filtra apenas ano desejado
-        //--------------------------------------------------
-        if(year != anoEscolhido)
-            continue;
+        // Verifica se existe nos dados
+        if(validarNOC(entrada, dados, totalDeDados)){
 
-        //--------------------------------------------------
-        // Verifica país
-        //--------------------------------------------------
-        for(int i=0;i<MAX_COUNTRIES;i++){
+            int repetido = 0;
 
-            if(strncmp(noc, paises[i].noc,3)==0){
+            // Evita inserir país duplicado
+            for(int j=0;j<count;j++){
+                if(strcmp(placar[j].noc, entrada)==0){
+                    repetido = 1;
+                    break;
+                }
+            }
 
-                adicionaAtleta(&paises[i], athleteID);
+            if(repetido){
+                printf("Pais repetido, escolha outro\n");
+            }
+            else{
+                strcpy(placar[count].noc, entrada);
+                placar[count].total_medalhas = 0;
+                placar[count].total_atletas = 0;
+
+                printf(" -> %s adicionado\n", entrada);
+                count++;
+            }
+        }
+        else{
+            printf("Codigo nao encontrado\n");
+        }
+    }
+
+
+    // Percorre todos os dados carregados
+    // Aqui acontece a contagem de medalhas e atletas
+    for(int i=0;i<totalDeDados;i++){
+
+        for(int k=0;k<10;k++){
+
+            // Verifica se o registro pertence a um dos países escolhidos
+            if(strcmp(dados[i].noc, placar[k].noc)==0){
+
+                // Conta atleta apenas uma vez
+                if(!atletaJaExiste(atletasTemp[k],
+                                   atletasCount[k],
+                                   dados[i].athlete_id))
+                {
+                    atletasTemp[k][atletasCount[k]++] =
+                        dados[i].athlete_id;
+
+                    placar[k].total_atletas++;
+                }
 
                 // Conta medalha válida
-                if(strcmp(medal,"NA")!=0 &&
-                   strlen(medal)>0)
-                    paises[i].medalhas++;
+                if(strcmp(dados[i].medal,"NA")!=0 &&
+                   strcmp(dados[i].medal,"")!=0)
+                {
+                    placar[k].total_medalhas++;
+                }
+
+                break;
             }
         }
     }
 
-    fclose(file);
 
-    //------------------------------------------------------
-    // Ordena países por eficiência
-    //------------------------------------------------------
-    qsort(paises, MAX_COUNTRIES, sizeof(Pais), compara);
+    // Ordena os países com base na eficiência
+    qsort(placar, 10, sizeof(PaisStats), compararEficiencia);
 
-    //------------------------------------------------------
-    // Mostra resultados
-    //------------------------------------------------------
-    printf("\n=== EFICIENCIA OLIMPICA ===\n");
 
-    for(int i=0;i<MAX_COUNTRIES;i++){
+    // Impressão do ranking final
+    printf("%-10s | %-10s | %-10s | %s\n",
+           "PAIS","MEDALHAS","ATLETAS","EFICIENCIA");
+
+    printf("-------------------------------------------------\n");
+
+    for(int i=0;i<10;i++){
+
         double eficiencia =
-            (paises[i].atletasCount==0) ? 0 :
-            (double)paises[i].medalhas/paises[i].atletasCount;
+            (placar[i].total_atletas==0)?0:
+            (double)placar[i].total_medalhas /
+            placar[i].total_atletas;
 
-        printf("%s -> Medalhas:%d  Atletas:%d  Razao:%.5f\n",
-               paises[i].noc,
-               paises[i].medalhas,
-               paises[i].atletasCount,
+        printf("%-10s | %-10d | %-10d | %.4f\n",
+               placar[i].noc,
+               placar[i].total_medalhas,
+               placar[i].total_atletas,
                eficiencia);
     }
-
-    //------------------------------------------------------
-    // Geração de dados e gráfico
-    //------------------------------------------------------
-    gerarCSV(paises);
-    gerarGrafico();
-
-    return 0;
 }
