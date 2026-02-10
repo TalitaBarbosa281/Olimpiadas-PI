@@ -4,8 +4,61 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "structs.h"
+#include "../include/structs.h"
+#include "../include/leitura.h"
 
+// -------------------------------- Inicio do gráfico --------------------------------
+
+void gerar_grafico_rankingQ1(PaisStats placar[]) {
+    FILE *gnuplotPipe = popen("\"C:\\Program Files\\gnuplot\\bin\\gnuplot.exe\" -persistent", "w");
+
+    if (gnuplotPipe == NULL) {
+        printf("Gnuplot nao encontrado (verifique o caminho).\n");
+        return;
+    }
+
+    printf("\nGerando grafico...\n");
+
+    // Configurações visuais
+    fprintf(gnuplotPipe, "set terminal pngcairo size 1000,600 enhanced font 'Verdana,10'\n");
+    fprintf(gnuplotPipe, "set output 'ranking_medalhas.png'\n");
+    
+    fprintf(gnuplotPipe, "set title 'Top 10 Paises Escolhidos - Total de Medalhas'\n");
+    fprintf(gnuplotPipe, "set ylabel 'Total de Medalhas'\n");
+    fprintf(gnuplotPipe, "set xlabel 'Paises'\n");
+    
+    // Estilo das barras
+    fprintf(gnuplotPipe, "set style fill solid 1.0 border -1\n");
+    fprintf(gnuplotPipe, "set boxwidth 0.5\n");
+    fprintf(gnuplotPipe, "set grid y\n");
+    
+    // Define o limite do eixo Y com uma margem de segurança
+    int max_medalhas = placar[0].total_medalhas; // O primeiro é o maior pq está ordenado
+    
+    int teto_grafico = max_medalhas + (max_medalhas * 0.1); // se o pais campeão tem 50 medalhas, o grafico vai até 55
+    if (teto_grafico == 0) {
+        teto_grafico = 10; // Se ninguém tem medalha, define o teto como 10 só para exibir o gráfico vazio (so para evitar uma msg de erro)
+    }
+    
+    fprintf(gnuplotPipe, "set yrange [0:%d]\n", teto_grafico); // envia o comando
+
+    // Plotagem
+    fprintf(gnuplotPipe, "plot '-' using 2:xtic(1) with boxes notitle linecolor rgb '#2E8B57'\n");
+
+    // Enviar dados (NOC e Total)
+    for (int i = 0; i < 10; i++) {
+        fprintf(gnuplotPipe, "\"%s\" %d\n", placar[i].noc, placar[i].total_medalhas);
+    }
+    
+    fprintf(gnuplotPipe, "e\n");
+
+    fflush(gnuplotPipe);
+    pclose(gnuplotPipe);
+
+    printf("Grafico gerado: 'ranking_medalhas.png'\n");
+}
+
+// -------------------------------- Fim do gráfico --------------------------------
 
 // Essa função percorre a string recebida e transforma cada caractere em maiúsculo. Isso evita erro quando o usuário digita siglas em minúsculo.
 void deixarMaiusculoQ1(char *str) {
@@ -116,5 +169,6 @@ void ordenarRanking(Resultado *dados, int totalDeDados){
             printf("%-10s | %d\n", placar[i].noc, placar[i].total_medalhas);
     }
     printf("\n");
+    gerar_grafico_rankingQ1(placar);
     }
-}
+

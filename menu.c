@@ -9,7 +9,7 @@
 // isso avisa ao compilador a presença dessas funções. Cada função atua em sua respectiva questão
 void ordenarRanking(Resultado *dados, int totalDeDados);
 void participacaoPorGenero();
-void resolver_questao_3();
+void resolver_questao_3(char* pais_alvo);
 void ordenarPontuacao(Resultado *dados, int totalDeDados);
 
 /*
@@ -30,7 +30,7 @@ int main() {
     Resultado *dados_res = NULL;
 
     printf("Carregando banco de dados...\n");
-    dados_res = carregar_resultados("results.csv", &qtd_res);
+    dados_res = carregar_resultados("data/results.csv", &qtd_res);
 
     if (!dados_res) {
         printf("[ERRO] results.csv nao encontrado.\n");
@@ -38,6 +38,8 @@ int main() {
     }
 
     int opcao = 0;
+    char pais_escolhido[100]; // tem q declarar antes, tava dando erro quando eu colocava dentro do case 3
+
     while (1) {
         #ifdef _WIN32
             system("cls");
@@ -62,13 +64,28 @@ int main() {
                 pausar();
                 break;
             case 2:
-                participacaoPorGenero();
+                // participacaoPorGenero();
                 pausar();
                 break;
             case 3:
-                resolver_questao_3();
+
+                printf("=== SISTEMA DE ANALISE DE MEDALHAS (QUESTAO 3) ===\n");
+                printf("Digite a sigla do pais (ex: BRA, USA, FRA): ");
+                
+                // Le o que o usuario digitou
+                scanf("%s", pais_escolhido);
+
+                // Converte para maiusculo a entrada
+                for(int i = 0; pais_escolhido[i]; i++){
+                    pais_escolhido[i] = toupper(pais_escolhido[i]);
+                }
+
+                // Chama a função da lógica que está no questao3.c
+                resolver_questao_3(pais_escolhido);
+
                 pausar();
                 break;
+                
             case 4:
                 ordenarPontuacao(dados_res, qtd_res);
                 pausar();

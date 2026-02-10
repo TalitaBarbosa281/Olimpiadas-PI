@@ -36,7 +36,7 @@ int compararPontos(const void *a, const void *b) {
 
 //----------------------------- Inicio do codigo de grafico ----------------------------- 
 
-void gerar_grafico_ranking(PaisStats placar[10]) {
+void gerar_grafico_rankingQ4(PaisStats placar[10]) {
     
     FILE *gnuplotPipe = popen("\"C:\\Program Files\\gnuplot\\bin\\gnuplot.exe\" -persistent", "w");
 
@@ -87,7 +87,7 @@ void gerar_grafico_ranking(PaisStats placar[10]) {
 //----------------------------- Fim do codigo de grafico ----------------------------- 
 
 // Essa é a função que organiza a lógica da questão de fato, que é ordenar avaliando a pontuação de medalhas
-void ordernarPontuacao(Resultado *dados, int totalDeDados){
+void ordenarPontuacao(Resultado *dados, int totalDeDados){
     printf("Ranking por Pontuacao Ouro, Prata e Bronze\n");
 
     //Aqui estou definindo a quantidade de países que podem ser usados, junto a um contador para realizar a atividade de loop while, onde ocorre a seleção de países. Como pode ver, acontecem algumas verificações no meio do caminho para evitar erros de código
@@ -184,5 +184,5 @@ void ordernarPontuacao(Resultado *dados, int totalDeDados){
                placar[i].pontuacao_total);
     }
     // manda os dados para o gnuplot gerar o gráfico
-    gerar_grafico_ranking(placar);
+    gerar_grafico_rankingQ4(placar);
 }
