@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "include/structs.h"
+#include "../include/structs.h"
 #include <ctype.h> 
-#include "leitura.h" 
+#include "../include/leitura.h" 
 
 // Código inserido para evitar ocorrência de erros caso um usuário digite em minusculo ou de forma "indefinida", com bRa... ou bRA...
 void deixarMaiusculoQ2(char*str) {
