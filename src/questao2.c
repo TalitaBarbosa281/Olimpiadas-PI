@@ -8,13 +8,13 @@
 #include "leitura.h" 
 
 // Código inserido para evitar ocorrência de erros caso um usuário digite em minusculo ou de forma "indefinida", com bRa... ou bRA...
-void deixarMaisculo(char*str) {
+void deixarMaiusculoQ2(char*str) {
    for (int i = 0; str[i] != '\0'; i++) {
     str[i] = toupper(str[i]);
    }
 }
 
-void participaçãoPorGenero() {
+void participacaoPorGenero() {
     
     // Declarando as variáveis:
     
@@ -30,9 +30,9 @@ void participaçãoPorGenero() {
     
     printf("Digite o NOC do país: ");
     scanf("%s", pais);
-    deixarMaiusculo(pais); //chamando para fazer a função auxiliar funcionar
+    deixarMaiusculoQ2(pais); //chamando para fazer a função auxiliar funcionar
 
-    FILE*data = fopen("data/bios.csv", "r");
+    FILE *data = fopen("bios.csv", "r");
     if (data == NULL) {
         printf("Erro ao abrir o arquivo!\n");   
         return; // removendo o 1
@@ -49,13 +49,13 @@ void participaçãoPorGenero() {
       char *ptr = linha;
 
      // Pulando as colunas que antecedem a coluna que contém o NOC:
-        ptr = csv_next_field(ptr, campo_atual, 300); // pula 1º coluna
-        ptr = csv_next_field(ptr, genero_atual, 300); // coluna do sexo dos atletas (a informação que queremos)
-        ptr = csv_next_field(ptr, campo_atual, 300); // pula...
-        ptr = csv_next_field(ptr, campo_atual, 300); // pula...
-        ptr = csv_next_field(ptr, campo_atual, 300);
-        ptr = csv_next_field(ptr, campo_atual, 300);
-        ptr = csv_next_field(ptr, campo_atual, 300); // coluna que contém o NOC
+        ptr = csv_next_field(ptr, campo_atual, sizeof(campo_atual)); // pula 1º coluna
+        ptr = csv_next_field(ptr, genero_atual, sizeof(campo_atual)); // coluna do sexo dos atletas (a informação que queremos)
+        ptr = csv_next_field(ptr, campo_atual, sizeof(campo_atual)); // pula...
+        ptr = csv_next_field(ptr, campo_atual, sizeof(campo_atual)); // pula...
+        ptr = csv_next_field(ptr, campo_atual, sizeof(campo_atual));
+        ptr = csv_next_field(ptr, campo_atual, sizeof(campo_atual));
+        ptr = csv_next_field(ptr, campo_atual, sizeof(campo_atual)); // coluna que contém o NOC
 
      // Na posição da coluna desejada fazemos uma comparação com o dado do campo_atual com o país procurado
             // Evita a possiblidade de erro na leitura
