@@ -6,15 +6,15 @@
 #include "include/leitura.h"
 
 
-// isso avisa ao compilador a presença dessas funções. Cada função atua em sua respectiva questão
+// isso avisa ao compilador a presença dessas funções. Cada função atua em sua respectiva questão. Isso é necessário porque o código dessas funções está em outros arquivos. Como o C lê tudo de cima pra baixo, quando chegarmos no main, o compilador precisa saber que essas questões existiam
 void ordenarRanking(Resultado *dados, int totalDeDados);
 void participacaoPorGenero();
 void resolver_questao_3(char* pais_alvo);
 void ordenarPontuacao(Resultado *dados, int totalDeDados);
 
 /*
-Quando usamos scanf, ele lê o número mas deixa o "Enter" (\n) sobrando na memória. Se não limparmos, o próximo comando de leitura vai achar esse "Enter" velho e pular a vez. Essa função consome tudo o que sobrou para deixar o caminho limpo.
-A função pausar atua para impedir que o terminal retorne à tela anterior antes do usuário desejar fazer isso. É uma auxiliar do próprio limpar_buffer
+Quando usamos scanf, ele lê o número mas deixa o "Enter" (\n) sobrando na memória.  Se não limparmos, o próximo comando de leitura vai achar esse "Enter" velho e pular a vez. 
+Essa função consome tudo o que sobrou para deixar o caminho limpo.
 */
 void limpar_buffer() {
     int c;
@@ -48,9 +48,9 @@ int main() {
         #endif
 
         printf("\n=== MENU OLIMPICO ===\n");
-        printf("3. Ranking olimpico por numero de medalhas\n");
+        printf("1. Ranking olimpico por numero de medalhas\n");
         printf("2. Participacao por genero nas Olimpiadas\n");
-        printf("1. Medalhistas que ja conquistaram mais de uma medalha\n");
+        printf("3. Medalhistas que ja conquistaram mais de uma medalha\n");
         printf("4. Ranking olimpico por media ponderada de medalhas\n");
         printf("0. Sair\n");
         printf("Escolha: ");
@@ -98,3 +98,4 @@ int main() {
     free(dados_res);
     return 0;
 }
+
