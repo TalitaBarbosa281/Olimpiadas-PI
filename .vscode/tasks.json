@@ -1,27 +1,41 @@
 {
-    "version": "0.2.0",
-    "configurations": [
+    "version": "2.0.0",
+    "tasks": [
         {
-            "name": "Rodar Menu Olímpico",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/programa_final.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "MIMode": "gdb",
-            "miDebuggerPath": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Habilitar a formatação perfeita para gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
+            "type": "cppbuild",
+            "label": "Compilar PROJETO COMPLETO",
+            "command": "gcc",
+            "args": [
+                "-g",
+                // Arquivo principal
+                "${workspaceFolder}\\menu.c",
+                
+                // Arquivos da pasta src
+                "${workspaceFolder}\\src\\leitura.c",
+                "${workspaceFolder}\\src\\questao1.c",
+                "${workspaceFolder}\\src\\questao2.c",
+                "${workspaceFolder}\\src\\questao3.c",
+                "${workspaceFolder}\\src\\questao4.c",
+                
+                // Pasta de includes
+                "-I",
+                "${workspaceFolder}\\include",
+                
+                // Arquivo de saída
+                "-o",
+                "${workspaceFolder}\\programa_final.exe"
             ],
-            
-            "preLaunchTask": "Compilar PROJETO COMPLETO"
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Usa o GCC do sistema para compilar o projeto todo."
         }
     ]
 }
