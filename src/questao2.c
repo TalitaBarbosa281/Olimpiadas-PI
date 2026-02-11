@@ -164,7 +164,7 @@ void participacaoPorGenero() {
         } 
     }
      
-    printf("O/a %s teve %d atletas masculinos e %d atletas femininas que participaram das Olimpiadas de Inverno e Verao nos ultimos anos.\n", pais, masculino, feminino);
+    printf("O pais %s teve %d atletas masculinos e %d atletas femininas que participaram das Olimpiadas de Inverno e Verao nos ultimos anos.\n", pais, masculino, feminino);
     printf("No total, sao %d atletas", masculino+feminino);
 
     fclose(data);
